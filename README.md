@@ -1,43 +1,77 @@
-# Enkel steg-for-steg
+# 🧰 Workshop Malspam — Linux setup guide
 
-## 0) Oppdater først 
-Her vil du få feilmelding dersom python ikke er lastet ned. Hvis det ikke er installert, gå til steg 2. 
+Dette dokumentet beskriver hvordan du setter opp alle nødvendige verktøy for å delta i **workshop_malspam** på Linux (Remnux, Ubuntu, Debian eller Kali).
+Remnux har mange av disse verktøyene fra før, men guiden sikrer at alt er oppdatert og tilgjengelig.
+
+---
+
+## ✅ Innhold
+
+* Python 3 + pip
+* pipx (for trygg installasjon av CLI-verktøy)
+* oletools
+* 7-Zip (p7zip)
+* lnkinfo
+* msidump (fra msitools)
+* (valgfritt) VS Code
+
+---
+
+## 🔧 Enkel steg-for-steg
+
+### 0) Oppdater systemet
+
+> Denne kommandoen oppdaterer systemet.
+> Hvis du får feilmelding om at Python ikke finnes etterpå, gå til steg 2.
 
 ```bash
 sudo apt update
 sudo apt upgrade -y
 ```
 
-## 1) Sjekk om Python 3 finnes
+---
+
+### 1) Sjekk om Python 3 finnes
 
 ```bash
-python3 --version  || echo "Python3 ikke funnet"
+python3 --version || echo "Python3 ikke funnet"
 ```
 
-Hvis du får versjon (f.eks. `Python 3.10.12`) er Python klart. Hvis ikke — installer i steg 2.
+Hvis du ser en versjon (f.eks. `Python 3.10.12`), gå videre.
+Hvis ikke → fortsett til steg 2.
 
-## 2) Installer Python3 + pip (hvis ikke til stede)
+---
+
+### 2) Installer Python 3 + pip
 
 ```bash
-# Installer Python og pip hvis de mangler
 sudo apt install -y python3 python3-pip
-# (valgfritt, trygt) noen verktøy forventer dette pakke: 
+# Noen verktøy forventer også dette:
 sudo apt install -y python3-venv
 ```
 
-`python3 --version` og `python3 -m pip --version` skal nå vise versjon.
+Sjekk:
 
-## 3) Installer systemverktøy (7zip, msitools, liblnk-utils)
+```bash
+python3 --version
+python3 -m pip --version
+```
+
+---
+
+### 3) Installer systemverktøy (7-Zip, msidump, lnkinfo)
 
 ```bash
 sudo apt install -y p7zip-full msitools liblnk-utils
 ```
 
+**Forklaring:**
+
 * `p7zip-full` = 7-Zip CLI
 * `msitools` = inneholder `msidump` og `msiextract`
-* `liblnk-utils` = `lnkinfo` for å analysere `.lnk`
+* `liblnk-utils` = gir `lnkinfo` for .LNK-filer
 
-Kopier for å sjekke at alt er installert:
+Sjekk:
 
 ```bash
 7z --help >/dev/null && echo "7z OK"
@@ -45,36 +79,41 @@ msidump --help >/dev/null && echo "msidump OK"
 lnkinfo -h >/dev/null && echo "lnkinfo OK"
 ```
 
-## 4) Installer pipx (anbefalt måte for CLI Python-verktøy)
+---
 
-`pipx` lager isolerte miljø for CLI-verktøy og setter dem i PATH — du trenger aldri å aktivere venv manuelt.
+### 4) Installer pipx (anbefalt)
+
+`pipx` installerer Python-baserte kommandolinjeverktøy trygt, uten at du trenger venv.
 
 ```bash
 sudo apt install -y pipx
 pipx ensurepath
-# Hvis du ser melding om PATH: enten logg ut/inn eller kør:
+# Hvis PATH-varsel: logg ut/inn eller kjør:
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-## 5) Installer oletools (via pipx)
+---
+
+### 5) Installer oletools
+
+Verktøy for analyse av Office-dokumenter med makroer.
 
 ```bash
 pipx install git+https://github.com/decalage2/oletools.git
 ```
 
-Verifiser:
+Sjekk:
 
 ```bash
 olevba --help >/dev/null && echo "oletools OK"
 ```
 
+---
 
-
-## 6) (Valgfritt) Installer VS Code (enklest via snap)
+### 6) (Valgfritt) Installer VS Code
 
 ```bash
 sudo snap install code --classic
-# eller bruk apt/pakkekilde om du foretrekker
 ```
 
 Sjekk:
@@ -83,12 +122,13 @@ Sjekk:
 code --version >/dev/null && echo "VS Code OK"
 ```
 
-## 7) Hurtig-verifisering alle sammen
+---
 
-Kjør denne for å se at alt er på plass:
+### 7) Verifiser alt på én gang
 
 ```bash
-python3 --version && pipx --version 2>/dev/null || echo "pipx mangler"
+python3 --version
+pipx --version 2>/dev/null || echo "pipx mangler"
 olevba --version 2>/dev/null || echo "oletools fraværende"
 7z --help >/dev/null && echo "7z OK"
 msidump --help >/dev/null && echo "msidump OK"
@@ -97,9 +137,9 @@ lnkinfo -h >/dev/null && echo "lnkinfo OK"
 
 ---
 
-# Alt i ett (copy/paste script)
+## 🚀 Alt-i-ett-script
 
-Dette scriptet forsøker å gjøre alt automatisk. Lim inn i terminal:
+Kopiér og lim dette direkte i terminalen:
 
 ```bash
 set -e
@@ -116,26 +156,44 @@ fi
 # System tools
 sudo apt install -y p7zip-full msitools liblnk-utils
 
-# pipx install
+# pipx
 if ! command -v pipx >/dev/null 2>&1; then
   sudo apt install -y pipx
 fi
 pipx ensurepath || true
 export PATH="$HOME/.local/bin:$PATH"
 
-# oletools via pipx
+# oletools
 if ! command -v olevba >/dev/null 2>&1; then
-  pipx install oletools[full] || python3 -m pip install --user -U oletools[full]
+  pipx install git+https://github.com/decalage2/oletools.git || \
+  python3 -m pip install --user -U git+https://github.com/decalage2/oletools.git
 fi
 
-# VS Code (valgfritt)
+# VS Code (optional)
 if ! command -v code >/dev/null 2>&1; then
   if command -v snap >/dev/null 2>&1; then
     sudo snap install code --classic
   fi
 fi
 
-echo "Setup ferdig. Sjekk at $HOME/.local/bin er i PATH hvis noe mangler."
+echo "✅ Oppsett ferdig!"
+echo "Prøv f.eks. 'olevba --help' for å teste oletools."
 ```
 
+---
 
+## 🧪 Eksempler på bruk
+
+```bash
+# Pakk ut et arkiv
+7z x stage1.7z -pinfected
+
+# Analyser makroer i et dokument
+olevba suspicious.docm
+
+# Undersøk en snarvei
+lnkinfo sample.lnk
+
+# Se innholdet i en MSI-fil
+msidump installer.msi
+```
